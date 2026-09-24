@@ -129,6 +129,13 @@ sends a TTL=0 frame so the switch drops the entry at once.
   are truncated: 127 characters for names and port descriptions, 255 for the
   system description.
 
+## Upstream
+
+A docs page in esphome.io format is in [`docs/lldp.rst`](docs/lldp.rst), ready
+for an esphome-docs PR once the upstream layout (`ethernet: lldp:` vs top-level
+`lldp:`) is settled; see
+[esphome/esphome#11760](https://github.com/esphome/esphome/pull/11760).
+
 ## Layout
 
 ```
