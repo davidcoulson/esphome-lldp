@@ -2,6 +2,7 @@ import esphome.codegen as cg
 from esphome.components import sensor
 import esphome.config_validation as cv
 from esphome.const import ENTITY_CATEGORY_DIAGNOSTIC
+from esphome.types import ConfigType
 
 from . import CONF_LLDP_ID, LLDPComponent
 
@@ -21,8 +22,8 @@ CONFIG_SCHEMA = cv.Schema(
 )
 
 
-async def to_code(config):
+async def to_code(config: ConfigType) -> None:
     parent = await cg.get_variable(config[CONF_LLDP_ID])
-    if conf := config.get(CONF_VLAN_ID):
+    if (conf := config.get(CONF_VLAN_ID)) is not None:
         sens = await sensor.new_sensor(conf)
         cg.add(parent.set_vlan_id_sensor(sens))

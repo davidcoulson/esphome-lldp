@@ -1,0 +1,59 @@
+ethernet:
+  type: IP101
+  mdc_pin: 23
+  mdio_pin: 32
+  clk:
+    pin: 0
+    mode: CLK_EXT_IN
+  phy_addr: 0
+  power_pin: 33
+
+api:
+
+lldp:
+  id: lldp_id
+  port_id: eth0
+  port_description: Ethernet
+  system_name: test-device
+  system_description: Test device
+  management_address: true
+  mdns: true
+  tx_interval: 30s
+  tx_hold: 4
+  tx_fast_count: 4
+  promiscuous: false
+  on_neighbor:
+    - logger.log:
+        format: "Neighbor %s port %s"
+        args: [x.system_name, x.port_id]
+  on_neighbor_lost:
+    - logger.log: "Neighbor lost"
+
+text_sensor:
+  - platform: lldp
+    system_name:
+      name: Switch
+    system_description:
+      name: Switch description
+    chassis_id:
+      name: Switch chassis ID
+    port_id:
+      name: Switch port
+    port_description:
+      name: Switch port description
+    management_address:
+      name: Switch address
+    capabilities:
+      name: Switch capabilities
+    source_mac:
+      name: Switch source MAC
+
+sensor:
+  - platform: lldp
+    vlan_id:
+      name: Port VLAN
+
+binary_sensor:
+  - platform: lldp
+    neighbor_present:
+      name: LLDP neighbor

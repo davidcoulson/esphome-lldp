@@ -2,6 +2,7 @@ import esphome.codegen as cg
 from esphome.components import binary_sensor
 import esphome.config_validation as cv
 from esphome.const import DEVICE_CLASS_CONNECTIVITY, ENTITY_CATEGORY_DIAGNOSTIC
+from esphome.types import ConfigType
 
 from . import CONF_LLDP_ID, LLDPComponent
 
@@ -20,8 +21,8 @@ CONFIG_SCHEMA = cv.Schema(
 )
 
 
-async def to_code(config):
+async def to_code(config: ConfigType) -> None:
     parent = await cg.get_variable(config[CONF_LLDP_ID])
-    if conf := config.get(CONF_NEIGHBOR_PRESENT):
+    if (conf := config.get(CONF_NEIGHBOR_PRESENT)) is not None:
         sens = await binary_sensor.new_binary_sensor(conf)
         cg.add(parent.set_neighbor_present_sensor(sens))

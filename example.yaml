@@ -17,7 +17,7 @@ external_components:
       type: local
       path: components
   # or, once pushed to GitHub:
-  # - source: github://davidcoulson/esphome-lldp@v0.1.0
+  # - source: github://davidcoulson/esphome-lldp@v0.2.0
   #   components: [lldp]
 
 logger:
@@ -47,10 +47,11 @@ lldp:
   # transmit: true
   # receive: true
   # promiscuous: false            # set true on W5500 / SPI chips without multicast filters
+  mdns: true                      # add lldp_switch/lldp_port/lldp_vlan to the _esphomelib mDNS TXT record
   on_neighbor:
     - logger.log:
         format: "Plugged into %s port %s"
-        args: [x.system_name.c_str(), x.port_id.c_str()]
+        args: [x.system_name, x.port_id]
   on_neighbor_lost:
     - logger.log: "LLDP neighbor gone"
 
