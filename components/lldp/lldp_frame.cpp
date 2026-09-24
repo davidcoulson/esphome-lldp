@@ -136,8 +136,10 @@ bool parse_lldp_frame(const uint8_t *frame, size_t len, LLDPNeighbor &out) {
         copy_text(out.system_description, sizeof(out.system_description), v, tlv_len);
         break;
       case TLV_SYSTEM_CAPABILITIES:
-        if (tlv_len >= 4)
-          format_capabilities(out.capabilities, sizeof(out.capabilities), be16(v + 2));
+        if (tlv_len >= 4) {
+          out.enabled_capabilities = be16(v + 2);
+          format_capabilities(out.capabilities, sizeof(out.capabilities), out.enabled_capabilities);
+        }
         break;
       case TLV_MANAGEMENT_ADDRESS: {
         // [addr_len][family][addr...]...; addr_len counts the family byte.
@@ -161,6 +163,15 @@ bool parse_lldp_frame(const uint8_t *frame, size_t len, LLDPNeighbor &out) {
   }
   // Tolerate a missing End TLV as long as the mandatory TLVs were present.
   return have_ttl;
+}
+
+static bool is_bridge(const LLDPNeighbor &n) { return (n.enabled_capabilities & (CAP_BRIDGE | CAP_REPEATER)) != 0; }
+
+bool should_replace_neighbor(const LLDPNeighbor &current, const LLDPNeighbor &incoming) {
+  if (current.same_port(incoming))
+    return true;
+  // Keep a bridge over a station; otherwise the most recent speaker wins.
+  return !(is_bridge(current) && !is_bridge(incoming));
 }
 
 bool LLDPFrameBuilder::begin(const uint8_t src_mac[6]) {

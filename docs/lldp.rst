@@ -209,8 +209,9 @@ passes every frame on the port to the ESP32, which costs a little CPU on busy ne
 LLDP does not need it, so ``receive: false`` is an alternative.
 
 The component tracks one neighbor, the switch port the device is attached to. If several LLDP
-speakers can reach the device (for example through an unmanaged switch in between), the sensors
-show whichever spoke last.
+speakers can reach the device (for example through an unmanaged switch in between), a bridge is
+kept over stations, so another ESPHome device on the same segment does not displace the switch;
+between stations the most recent speaker wins.
 
 See Also
 --------

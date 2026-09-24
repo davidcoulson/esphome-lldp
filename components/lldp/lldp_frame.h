@@ -52,8 +52,9 @@ struct LLDPNeighbor {
   char system_name[128];
   char system_description[256];
   char management_address[40];
-  char capabilities[96];  // enabled capabilities, e.g. "bridge, router"
-  int16_t vlan_id;        // 802.1 Port VLAN ID, -1 when not advertised
+  char capabilities[96];          // enabled capabilities, e.g. "bridge, router"
+  uint16_t enabled_capabilities;  // the same as Capability bits
+  int16_t vlan_id;                // 802.1 Port VLAN ID, -1 when not advertised
   uint16_t ttl;
 
   void clear() {
@@ -77,6 +78,12 @@ struct LLDPNeighbor {
 /// Parse a full Ethernet frame carrying an LLDPDU. Returns false if the frame
 /// is malformed or a mandatory TLV is missing.
 bool parse_lldp_frame(const uint8_t *frame, size_t len, LLDPNeighbor &out);
+
+/// Whether an LLDPDU from `incoming` should replace the neighbor we are
+/// currently tracking. Only one neighbor is tracked, so on a shared segment
+/// (an unmanaged switch between us and the real one) the bridge wins over
+/// stations that happen to be heard too. Refreshes from the same port always win.
+bool should_replace_neighbor(const LLDPNeighbor &current, const LLDPNeighbor &incoming);
 
 /// Incremental LLDPDU builder writing into a caller-provided buffer. Always
 /// keeps room for the End TLV, so finish() cannot fail after begin().

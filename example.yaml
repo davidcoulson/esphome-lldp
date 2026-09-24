@@ -17,7 +17,7 @@ external_components:
       type: local
       path: components
   # or, once pushed to GitHub:
-  # - source: github://davidcoulson/esphome-lldp@v0.2.0
+  # - source: github://davidcoulson/esphome-lldp@v0.2.1
   #   components: [lldp]
 
 logger:

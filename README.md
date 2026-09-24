@@ -34,7 +34,7 @@ The lwIP hook runs after any driver hook, so both work together.
 
 ```yaml
 external_components:
-  - source: github://davidcoulson/esphome-lldp@v0.2.0
+  - source: github://davidcoulson/esphome-lldp@v0.2.1
     components: [lldp]
 ```
 
@@ -123,7 +123,9 @@ sends a TTL=0 frame so the switch drops the entry at once.
   networks, because the chip then passes every frame up to the stack.
 - The component tracks **one** neighbor, the directly attached switch port.
   If several LLDP speakers can reach the device (for example through an
-  unmanaged switch), the sensors show whichever one spoke last.
+  unmanaged switch), a bridge is kept over stations, so another ESPHome
+  device on the same segment won't displace the switch; between stations the
+  most recent speaker wins.
 - Frames are checked for bounds and TLV order; malformed frames are dropped.
   Received strings are stored in fixed buffers (no heap), so very long values
   are truncated: 127 characters for names and port descriptions, 255 for the

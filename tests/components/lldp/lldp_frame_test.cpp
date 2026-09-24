@@ -111,6 +111,31 @@ TEST(LLDPBuild, NeverOverflows) {
   EXPECT_LE(b.finish(), sizeof(small));
 }
 
+TEST(LLDPNeighbor, BridgeWinsOverStationOnSharedSegment) {
+  // The switch frame advertises bridge+router; build a station frame like another ESPHome node sends.
+  LLDPNeighbor bridge, station;
+  ASSERT_TRUE(parse_lldp_frame(SWITCH_FRAME, sizeof(SWITCH_FRAME), bridge));
+  uint8_t buf[256];
+  LLDPFrameBuilder b(buf, sizeof(buf));
+  ASSERT_TRUE(b.begin(OUR_MAC));
+  ASSERT_TRUE(b.add_subtyped(TLV_CHASSIS_ID, CHASSIS_SUBTYPE_MAC, OUR_MAC, 6));
+  ASSERT_TRUE(b.add_subtyped(TLV_PORT_ID, PORT_SUBTYPE_INTERFACE_NAME, "eth0", 4));
+  ASSERT_TRUE(b.add_ttl(121));
+  ASSERT_TRUE(b.add_capabilities(CAP_STATION, CAP_STATION));
+  ASSERT_TRUE(parse_lldp_frame(buf, b.finish(), station));
+  EXPECT_EQ(bridge.enabled_capabilities, CAP_BRIDGE | CAP_ROUTER);
+  EXPECT_EQ(station.enabled_capabilities, CAP_STATION);
+
+  EXPECT_FALSE(should_replace_neighbor(bridge, station));  // keep the switch
+  EXPECT_TRUE(should_replace_neighbor(station, bridge));   // upgrade to the switch
+  EXPECT_TRUE(should_replace_neighbor(bridge, bridge));    // refresh from the same port
+  EXPECT_TRUE(should_replace_neighbor(station, station));  // same port, refresh
+  // Two different stations: most recent wins, as before.
+  LLDPNeighbor other = station;
+  strcpy(other.port_id, "eth1");
+  EXPECT_TRUE(should_replace_neighbor(station, other));
+}
+
 TEST(LLDPNeighbor, SameContentIgnoresTTL) {
   LLDPNeighbor a, b;
   ASSERT_TRUE(parse_lldp_frame(SWITCH_FRAME, sizeof(SWITCH_FRAME), a));

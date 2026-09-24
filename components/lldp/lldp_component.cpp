@@ -57,6 +57,11 @@ void LLDPComponent::setup() {
 #endif
   }
   global_lldp_component = this;
+#ifdef USE_BINARY_SENSOR
+  // No neighbor is known yet; report "off" rather than leaving the entity unknown until one shows up.
+  if (this->present_sensor_ != nullptr)
+    this->present_sensor_->publish_state(false);
+#endif
   this->set_interval(TICK_MS, [this]() { this->tick_(); });
   this->try_init_();
 }
@@ -275,6 +280,11 @@ void LLDPComponent::handle_neighbor_(const LLDPNeighbor &neighbor) {
 
   bool changed = !this->has_neighbor_ || !this->neighbor_.same_content(neighbor);
   if (this->has_neighbor_ && !this->neighbor_.same_port(neighbor)) {
+    if (!should_replace_neighbor(this->neighbor_, neighbor)) {
+      ESP_LOGV(TAG, "Ignoring station '%s' while bridge '%s' is known", neighbor.system_name,
+               this->neighbor_.system_name);
+      return;
+    }
     ESP_LOGI(TAG, "Neighbor changed from %s/%s to %s/%s", this->neighbor_.chassis_id, this->neighbor_.port_id,
              neighbor.chassis_id, neighbor.port_id);
   }
